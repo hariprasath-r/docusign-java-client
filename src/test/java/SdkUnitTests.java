@@ -7,6 +7,8 @@
 
 import com.docusign.esign.api.*;
 import com.docusign.esign.client.*;
+import com.docusign.esign.client.auth.UserInfo;
+import com.docusign.esign.client.auth.UserInfo.Account;
 //import com.docusign.esign.client.auth.AccessTokenListener;
 import com.docusign.esign.model.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -36,6 +38,7 @@ import com.migcomponents.migbase64.Base64;
  *
  * @author majid.mallis
  */
+@SuppressWarnings("deprecation")
 public class SdkUnitTests {
 
 	public static final String UserName = "node_sdk@mailinator.com";
@@ -52,8 +55,9 @@ public class SdkUnitTests {
 
 	public static final String SignTest1File = "/src/test/docs/SignTest1.pdf";
 	public static final String TemplateId = "cf2a46c2-8d6e-4258-9d62-752547b1a419";
-	public String EnvelopeId = "a8a4fac1-ec18-443a-98f0-f8ad0cc23d42";
-	// JUnit 4.12 runs test cases in parallel, so the envelope ID needs to be initiated as well.
+	public String EnvelopeId = "98401faf-4328-4983-858c-0d3d70f52cec";
+	// JUnit 4.12 runs test cases in parallel, so the envelope ID needs to be
+	// initiated as well.
 
 	// private JSON json = new JSON();
 
@@ -84,40 +88,32 @@ public class SdkUnitTests {
 
 		ApiClient apiClient = new ApiClient(BaseUrl);
 		String currentDir = System.getProperty("user.dir");
-		
+
 		try {
 			// IMPORTANT NOTE:
-			// the first time you ask for a JWT access token, you should grant access by making the following call
+			// the first time you ask for a JWT access token, you should grant
+			// access by making the following call
 			// get DocuSign OAuth authorization url:
-			//String oauthLoginUrl = apiClient.getJWTUri(IntegratorKey, RedirectURI, OAuthBaseUrl);
-			// open DocuSign OAuth authorization url in the browser, login and grant access
-			//Desktop.getDesktop().browse(URI.create(oauthLoginUrl));
+			// String oauthLoginUrl = apiClient.getJWTUri(IntegratorKey,
+			// RedirectURI, OAuthBaseUrl);
+			// open DocuSign OAuth authorization url in the browser, login and
+			// grant access
+			// Desktop.getDesktop().browse(URI.create(oauthLoginUrl));
 			// END OF NOTE
-			
-			apiClient.configureJWTAuthorizationFlow(currentDir + publicKeyFilename, currentDir + privateKeyFilename, OAuthBaseUrl, IntegratorKey, UserId, 3600);
+
+			apiClient.configureJWTAuthorizationFlow(currentDir + publicKeyFilename, currentDir + privateKeyFilename,
+					OAuthBaseUrl, IntegratorKey, UserId, 3600);
 			Configuration.setDefaultApiClient(apiClient);
 
-			AuthenticationApi authApi = new AuthenticationApi();
-			AuthenticationApi.LoginOptions loginOps = authApi.new LoginOptions();
-			loginOps.setApiPassword("true");
-			loginOps.setIncludeAccountIdGuid("true");
-			LoginInformation loginInfo = authApi.login(loginOps);
+			UserInfo loginInfo = apiClient.getUserInfo(OAuthBaseUrl);
 
 			Assert.assertNotSame(null, loginInfo);
-			Assert.assertNotNull(loginInfo.getLoginAccounts());
-			Assert.assertTrue(loginInfo.getLoginAccounts().size() > 0);
-			List<LoginAccount> loginAccounts = loginInfo.getLoginAccounts();
+			Assert.assertNotNull(loginInfo.getAccounts());
+			Assert.assertTrue(loginInfo.getAccounts().size() > 0);
+			List<Account> loginAccounts = loginInfo.getAccounts();
 			Assert.assertNotNull(loginAccounts.get(0).getAccountId());
 
 			System.out.println("LoginInformation: " + loginInfo);
-
-			// parse first account's baseUrl
-			String[] accountDomain = loginInfo.getLoginAccounts().get(0).getBaseUrl().split("/v2");
-
-			// below code required for production, no effect in demo (same
-			// domain)
-			apiClient.setBasePath(accountDomain[0]);
-			Configuration.setDefaultApiClient(apiClient);
 		} catch (ApiException ex) {
 			System.out.println("Exception: " + ex);
 		} catch (Exception e) {
@@ -128,7 +124,8 @@ public class SdkUnitTests {
 	@Test
 	public void OAuthLoginTest() {
 
-		ApiClient apiClient = new ApiClient("https://" + OAuthBaseUrl, "docusignAccessCode", IntegratorKey, ClientSecret);
+		ApiClient apiClient = new ApiClient("https://" + OAuthBaseUrl, "docusignAccessCode", IntegratorKey,
+				ClientSecret);
 		apiClient.setBasePath(BaseUrl);
 		// make sure to pass the redirect uri
 		apiClient.configureAuthorizationFlow(IntegratorKey, ClientSecret, RedirectURI);
@@ -148,36 +145,26 @@ public class SdkUnitTests {
 			// assign it to the token endpoint
 			apiClient.getTokenEndPoint().setCode(code);
 			// optionally register to get notified when a new token arrives
-			/*apiClient.registerAccessTokenListener(new AccessTokenListener() {
-				@Override
-				public void notify(BasicOAuthToken token) {
-					System.out.println("Got a fresh token: " + token.getAccessToken());
-				}
-			});
-			// ask to exchange the auth code with an access code
-			apiClient.updateAccessToken();
-
-			// now that the API client has an OAuth token, let's use in all
-			// DocuSign APIs
-			AuthenticationApi authApi = new AuthenticationApi(apiClient);
-			AuthenticationApi.LoginOptions loginOps = authApi.new LoginOptions();
-			loginOps.setApiPassword("true");
-			loginOps.setIncludeAccountIdGuid("true");
-			LoginInformation loginInfo = authApi.login(loginOps);
-
-			List<LoginAccount> loginAccounts = loginInfo.getLoginAccounts();
-
-			System.out.println("LoginInformation: " + loginInfo);
-
-			// parse first account's baseUrl
-			String[] accountDomain = loginInfo.getLoginAccounts().get(0).getBaseUrl().split("/v2");
-
-			// below code required for production, no effect in demo (same
-			// domain)
-			apiClient.setBasePath(accountDomain[0]);
-			Configuration.setDefaultApiClient(apiClient);*/
-		//} catch (ApiException ex) {
-		//	System.out.println("Exception: " + ex);
+			/*
+			 * apiClient.registerAccessTokenListener(new AccessTokenListener() {
+			 * 
+			 * @Override public void notify(BasicOAuthToken token) {
+			 * System.out.println("Got a fresh token: " +
+			 * token.getAccessToken()); } }); // ask to exchange the auth code
+			 * with an access code apiClient.updateAccessToken();
+			 * 
+			 * // now that the API client has an OAuth token, let's use in all
+			 * // DocuSign APIs UserInfo loginInfo =
+			 * apiClient.getUserInfo(OAuthBaseUrl);
+			 * 
+			 * Assert.assertNotSame(null, loginInfo);
+			 * Assert.assertNotNull(loginInfo.getAccounts());
+			 * Assert.assertTrue(loginInfo.getAccounts().size() > 0);
+			 * List<Account> loginAccounts = loginInfo.getAccounts();
+			 * Assert.assertNotNull(loginAccounts.get(0).getAccountId());
+			 */
+			// } catch (ApiException ex) {
+			// System.out.println("Exception: " + ex);
 		} catch (Exception e) {
 			System.out.println("Exception: " + e.getLocalizedMessage());
 		}
@@ -246,41 +233,32 @@ public class SdkUnitTests {
 
 		ApiClient apiClient = new ApiClient(BaseUrl);
 		String currentDir = System.getProperty("user.dir");
-		
+
 		try {
 			// IMPORTANT NOTE:
-			// the first time you ask for a JWT access token, you should grant access by making the following call
+			// the first time you ask for a JWT access token, you should grant
+			// access by making the following call
 			// get DocuSign OAuth authorization url:
-			//String oauthLoginUrl = apiClient.getJWTUri(IntegratorKey, RedirectURI, OAuthBaseUrl);
-			// open DocuSign OAuth authorization url in the browser, login and grant access
-			//Desktop.getDesktop().browse(URI.create(oauthLoginUrl));
+			// String oauthLoginUrl = apiClient.getJWTUri(IntegratorKey,
+			// RedirectURI, OAuthBaseUrl);
+			// open DocuSign OAuth authorization url in the browser, login and
+			// grant access
+			// Desktop.getDesktop().browse(URI.create(oauthLoginUrl));
 			// END OF NOTE
-			
-			apiClient.configureJWTAuthorizationFlow(currentDir + publicKeyFilename, currentDir + privateKeyFilename, OAuthBaseUrl, IntegratorKey, UserId, 3600);
+
+			apiClient.configureJWTAuthorizationFlow(currentDir + publicKeyFilename, currentDir + privateKeyFilename,
+					OAuthBaseUrl, IntegratorKey, UserId, 3600);
 			Configuration.setDefaultApiClient(apiClient);
 
-			AuthenticationApi authApi = new AuthenticationApi();
+			UserInfo loginInfo = apiClient.getUserInfo(OAuthBaseUrl);
 
-			AuthenticationApi.LoginOptions loginOptions = authApi.new LoginOptions();
-			loginOptions.setApiPassword("true");
-			loginOptions.setIncludeAccountIdGuid("true");
-			LoginInformation loginInfo = authApi.login(loginOptions);
-
-			Assert.assertNotNull(loginInfo);
-			Assert.assertNotNull(loginInfo.getLoginAccounts());
-			Assert.assertTrue(loginInfo.getLoginAccounts().size() > 0);
-			List<LoginAccount> loginAccounts = loginInfo.getLoginAccounts();
+			Assert.assertNotSame(null, loginInfo);
+			Assert.assertNotNull(loginInfo.getAccounts());
+			Assert.assertTrue(loginInfo.getAccounts().size() > 0);
+			List<Account> loginAccounts = loginInfo.getAccounts();
 			Assert.assertNotNull(loginAccounts.get(0).getAccountId());
 
-			String accountId = loginInfo.getLoginAccounts().get(0).getAccountId();
-
-			// parse first account's baseUrl
-			String[] accountDomain = loginInfo.getLoginAccounts().get(0).getBaseUrl().split("/v2");
-
-			// below code required for production, no effect in demo (same
-			// domain)
-			apiClient.setBasePath(accountDomain[0]);
-			Configuration.setDefaultApiClient(apiClient);
+			String accountId = loginInfo.getAccounts().get(0).getAccountId();
 
 			EnvelopesApi envelopesApi = new EnvelopesApi();
 
@@ -332,41 +310,32 @@ public class SdkUnitTests {
 
 		ApiClient apiClient = new ApiClient(BaseUrl);
 		String currentDir = System.getProperty("user.dir");
-		
+
 		try {
 			// IMPORTANT NOTE:
-			// the first time you ask for a JWT access token, you should grant access by making the following call
+			// the first time you ask for a JWT access token, you should grant
+			// access by making the following call
 			// get DocuSign OAuth authorization url:
-			//String oauthLoginUrl = apiClient.getJWTUri(IntegratorKey, RedirectURI, OAuthBaseUrl);
-			// open DocuSign OAuth authorization url in the browser, login and grant access
-			//Desktop.getDesktop().browse(URI.create(oauthLoginUrl));
+			// String oauthLoginUrl = apiClient.getJWTUri(IntegratorKey,
+			// RedirectURI, OAuthBaseUrl);
+			// open DocuSign OAuth authorization url in the browser, login and
+			// grant access
+			// Desktop.getDesktop().browse(URI.create(oauthLoginUrl));
 			// END OF NOTE
-			
-			apiClient.configureJWTAuthorizationFlow(currentDir + publicKeyFilename, currentDir + privateKeyFilename, OAuthBaseUrl, IntegratorKey, UserId, 3600);
+
+			apiClient.configureJWTAuthorizationFlow(currentDir + publicKeyFilename, currentDir + privateKeyFilename,
+					OAuthBaseUrl, IntegratorKey, UserId, 3600);
 			Configuration.setDefaultApiClient(apiClient);
 
-			AuthenticationApi authApi = new AuthenticationApi();
+			UserInfo loginInfo = apiClient.getUserInfo(OAuthBaseUrl);
 
-			AuthenticationApi.LoginOptions loginOptions = authApi.new LoginOptions();
-			loginOptions.setApiPassword("true");
-			loginOptions.setIncludeAccountIdGuid("true");
-			LoginInformation loginInfo = authApi.login(loginOptions);
-
-			Assert.assertNotNull(loginInfo);
-			Assert.assertNotNull(loginInfo.getLoginAccounts());
-			Assert.assertTrue(loginInfo.getLoginAccounts().size() > 0);
-			List<LoginAccount> loginAccounts = loginInfo.getLoginAccounts();
+			Assert.assertNotSame(null, loginInfo);
+			Assert.assertNotNull(loginInfo.getAccounts());
+			Assert.assertTrue(loginInfo.getAccounts().size() > 0);
+			List<Account> loginAccounts = loginInfo.getAccounts();
 			Assert.assertNotNull(loginAccounts.get(0).getAccountId());
 
-			String accountId = loginInfo.getLoginAccounts().get(0).getAccountId();
-
-			// parse first account's baseUrl
-			String[] accountDomain = loginInfo.getLoginAccounts().get(0).getBaseUrl().split("/v2");
-
-			// below code required for production, no effect in demo (same
-			// domain)
-			apiClient.setBasePath(accountDomain[0]);
-			Configuration.setDefaultApiClient(apiClient);
+			String accountId = loginInfo.getAccounts().get(0).getAccountId();
 
 			EnvelopesApi envelopesApi = new EnvelopesApi();
 
@@ -453,37 +422,32 @@ public class SdkUnitTests {
 
 		ApiClient apiClient = new ApiClient(BaseUrl);
 		String currentDir = System.getProperty("user.dir");
-		
+
 		try {
 			// IMPORTANT NOTE:
-			// the first time you ask for a JWT access token, you should grant access by making the following call
+			// the first time you ask for a JWT access token, you should grant
+			// access by making the following call
 			// get DocuSign OAuth authorization url:
-			//String oauthLoginUrl = apiClient.getJWTUri(IntegratorKey, RedirectURI, OAuthBaseUrl);
-			// open DocuSign OAuth authorization url in the browser, login and grant access
-			//Desktop.getDesktop().browse(URI.create(oauthLoginUrl));
+			// String oauthLoginUrl = apiClient.getJWTUri(IntegratorKey,
+			// RedirectURI, OAuthBaseUrl);
+			// open DocuSign OAuth authorization url in the browser, login and
+			// grant access
+			// Desktop.getDesktop().browse(URI.create(oauthLoginUrl));
 			// END OF NOTE
-			
-			apiClient.configureJWTAuthorizationFlow(currentDir + publicKeyFilename, currentDir + privateKeyFilename, OAuthBaseUrl, IntegratorKey, UserId, 3600);
+
+			apiClient.configureJWTAuthorizationFlow(currentDir + publicKeyFilename, currentDir + privateKeyFilename,
+					OAuthBaseUrl, IntegratorKey, UserId, 3600);
 			Configuration.setDefaultApiClient(apiClient);
 
-			AuthenticationApi authApi = new AuthenticationApi();
-			LoginInformation loginInfo = authApi.login();
+			UserInfo loginInfo = apiClient.getUserInfo(OAuthBaseUrl);
 
 			Assert.assertNotSame(null, loginInfo);
-			Assert.assertNotNull(loginInfo.getLoginAccounts());
-			Assert.assertTrue(loginInfo.getLoginAccounts().size() > 0);
-			List<LoginAccount> loginAccounts = loginInfo.getLoginAccounts();
+			Assert.assertNotNull(loginInfo.getAccounts());
+			Assert.assertTrue(loginInfo.getAccounts().size() > 0);
+			List<Account> loginAccounts = loginInfo.getAccounts();
 			Assert.assertNotNull(loginAccounts.get(0).getAccountId());
 
-			String accountId = loginInfo.getLoginAccounts().get(0).getAccountId();
-
-			// parse first account's baseUrl
-			String[] accountDomain = loginInfo.getLoginAccounts().get(0).getBaseUrl().split("/v2");
-
-			// below code required for production, no effect in demo (same
-			// domain)
-			apiClient.setBasePath(accountDomain[0]);
-			Configuration.setDefaultApiClient(apiClient);
+			String accountId = loginInfo.getAccounts().get(0).getAccountId();
 
 			EnvelopesApi envelopesApi = new EnvelopesApi();
 			EnvelopeSummary envelopeSummary = envelopesApi.createEnvelope(accountId, envDef);
@@ -501,7 +465,7 @@ public class SdkUnitTests {
 			recipientView.setUserName(name);
 			recipientView.setEmail(UserName);
 
-			ViewUrl viewUrl = envelopesApi.createRecipientView(loginInfo.getLoginAccounts().get(0).getAccountId(),
+			ViewUrl viewUrl = envelopesApi.createRecipientView(loginInfo.getAccounts().get(0).getAccountId(),
 					envelopeSummary.getEnvelopeId(), recipientView);
 
 			Assert.assertNotNull(viewUrl);
@@ -522,6 +486,7 @@ public class SdkUnitTests {
 	public void CreateTemplateTest() {
 
 		byte[] fileBytes = null;
+		@SuppressWarnings("unused")
 		File f = null;
 		try {
 			// String currentDir = new java.io.File(".").getCononicalPath();
@@ -584,37 +549,32 @@ public class SdkUnitTests {
 
 		ApiClient apiClient = new ApiClient(BaseUrl);
 		String currentDir = System.getProperty("user.dir");
-		
+
 		try {
 			// IMPORTANT NOTE:
-			// the first time you ask for a JWT access token, you should grant access by making the following call
+			// the first time you ask for a JWT access token, you should grant
+			// access by making the following call
 			// get DocuSign OAuth authorization url:
-			//String oauthLoginUrl = apiClient.getJWTUri(IntegratorKey, RedirectURI, OAuthBaseUrl);
-			// open DocuSign OAuth authorization url in the browser, login and grant access
-			//Desktop.getDesktop().browse(URI.create(oauthLoginUrl));
+			// String oauthLoginUrl = apiClient.getJWTUri(IntegratorKey,
+			// RedirectURI, OAuthBaseUrl);
+			// open DocuSign OAuth authorization url in the browser, login and
+			// grant access
+			// Desktop.getDesktop().browse(URI.create(oauthLoginUrl));
 			// END OF NOTE
-			
-			apiClient.configureJWTAuthorizationFlow(currentDir + publicKeyFilename, currentDir + privateKeyFilename, OAuthBaseUrl, IntegratorKey, UserId, 3600);
+
+			apiClient.configureJWTAuthorizationFlow(currentDir + publicKeyFilename, currentDir + privateKeyFilename,
+					OAuthBaseUrl, IntegratorKey, UserId, 3600);
 			Configuration.setDefaultApiClient(apiClient);
 
-			AuthenticationApi authApi = new AuthenticationApi();
-			LoginInformation loginInfo = authApi.login();
+			UserInfo loginInfo = apiClient.getUserInfo(OAuthBaseUrl);
 
-			Assert.assertNotNull(loginInfo);
-			Assert.assertNotNull(loginInfo.getLoginAccounts());
-			Assert.assertTrue(loginInfo.getLoginAccounts().size() > 0);
-			List<LoginAccount> loginAccounts = loginInfo.getLoginAccounts();
+			Assert.assertNotSame(null, loginInfo);
+			Assert.assertNotNull(loginInfo.getAccounts());
+			Assert.assertTrue(loginInfo.getAccounts().size() > 0);
+			List<Account> loginAccounts = loginInfo.getAccounts();
 			Assert.assertNotNull(loginAccounts.get(0).getAccountId());
 
-			String accountId = loginInfo.getLoginAccounts().get(0).getAccountId();
-
-			// parse first account's baseUrl
-			String[] accountDomain = loginInfo.getLoginAccounts().get(0).getBaseUrl().split("/v2");
-
-			// below code required for production, no effect in demo (same
-			// domain)
-			apiClient.setBasePath(accountDomain[0]);
-			Configuration.setDefaultApiClient(apiClient);
+			String accountId = loginInfo.getAccounts().get(0).getAccountId();
 
 			TemplatesApi templatesApi = new TemplatesApi();
 			TemplateSummary templateSummary = templatesApi.createTemplate(accountId, templateDef);
@@ -705,24 +665,15 @@ public class SdkUnitTests {
 			apiClient.addDefaultHeader("X-DocuSign-Authentication", creds);
 			Configuration.setDefaultApiClient(apiClient);
 
-			AuthenticationApi authApi = new AuthenticationApi();
-			LoginInformation loginInfo = authApi.login();
+			UserInfo loginInfo = apiClient.getUserInfo(OAuthBaseUrl);
 
 			Assert.assertNotSame(null, loginInfo);
-			Assert.assertNotNull(loginInfo.getLoginAccounts());
-			Assert.assertTrue(loginInfo.getLoginAccounts().size() > 0);
-			List<LoginAccount> loginAccounts = loginInfo.getLoginAccounts();
+			Assert.assertNotNull(loginInfo.getAccounts());
+			Assert.assertTrue(loginInfo.getAccounts().size() > 0);
+			List<Account> loginAccounts = loginInfo.getAccounts();
 			Assert.assertNotNull(loginAccounts.get(0).getAccountId());
 
-			String accountId = loginInfo.getLoginAccounts().get(0).getAccountId();
-
-			// parse first account's baseUrl
-			String[] accountDomain = loginInfo.getLoginAccounts().get(0).getBaseUrl().split("/v2");
-
-			// below code required for production, no effect in demo (same
-			// domain)
-			apiClient.setBasePath(accountDomain[0]);
-			Configuration.setDefaultApiClient(apiClient);
+			String accountId = loginInfo.getAccounts().get(0).getAccountId();
 
 			EnvelopesApi envelopesApi = new EnvelopesApi();
 			EnvelopeSummary envelopeSummary = envelopesApi.createEnvelope(accountId, envDef);
@@ -763,37 +714,32 @@ public class SdkUnitTests {
 	public void ListDocumentsTest() {
 		ApiClient apiClient = new ApiClient(BaseUrl);
 		String currentDir = System.getProperty("user.dir");
-		
+
 		try {
 			// IMPORTANT NOTE:
-			// the first time you ask for a JWT access token, you should grant access by making the following call
+			// the first time you ask for a JWT access token, you should grant
+			// access by making the following call
 			// get DocuSign OAuth authorization url:
-			//String oauthLoginUrl = apiClient.getJWTUri(IntegratorKey, RedirectURI, OAuthBaseUrl);
-			// open DocuSign OAuth authorization url in the browser, login and grant access
-			//Desktop.getDesktop().browse(URI.create(oauthLoginUrl));
+			// String oauthLoginUrl = apiClient.getJWTUri(IntegratorKey,
+			// RedirectURI, OAuthBaseUrl);
+			// open DocuSign OAuth authorization url in the browser, login and
+			// grant access
+			// Desktop.getDesktop().browse(URI.create(oauthLoginUrl));
 			// END OF NOTE
-			
-			apiClient.configureJWTAuthorizationFlow(currentDir + publicKeyFilename, currentDir + privateKeyFilename, OAuthBaseUrl, IntegratorKey, UserId, 3600);
+
+			apiClient.configureJWTAuthorizationFlow(currentDir + publicKeyFilename, currentDir + privateKeyFilename,
+					OAuthBaseUrl, IntegratorKey, UserId, 3600);
 			Configuration.setDefaultApiClient(apiClient);
 
-			AuthenticationApi authApi = new AuthenticationApi();
-			LoginInformation loginInfo = authApi.login();
+			UserInfo loginInfo = apiClient.getUserInfo(OAuthBaseUrl);
 
-			Assert.assertNotNull(loginInfo);
-			Assert.assertNotNull(loginInfo.getLoginAccounts());
-			Assert.assertTrue(loginInfo.getLoginAccounts().size() > 0);
-			List<LoginAccount> loginAccounts = loginInfo.getLoginAccounts();
+			Assert.assertNotSame(null, loginInfo);
+			Assert.assertNotNull(loginInfo.getAccounts());
+			Assert.assertTrue(loginInfo.getAccounts().size() > 0);
+			List<Account> loginAccounts = loginInfo.getAccounts();
 			Assert.assertNotNull(loginAccounts.get(0).getAccountId());
 
-			String accountId = loginInfo.getLoginAccounts().get(0).getAccountId();
-
-			// parse first account's baseUrl
-			String[] accountDomain = loginInfo.getLoginAccounts().get(0).getBaseUrl().split("/v2");
-
-			// below code required for production, no effect in demo (same
-			// domain)
-			apiClient.setBasePath(accountDomain[0]);
-			Configuration.setDefaultApiClient(apiClient);
+			String accountId = loginInfo.getAccounts().get(0).getAccountId();
 
 			EnvelopesApi envelopesApi = new EnvelopesApi();
 
@@ -876,37 +822,32 @@ public class SdkUnitTests {
 
 		ApiClient apiClient = new ApiClient(BaseUrl);
 		String currentDir = System.getProperty("user.dir");
-		
+
 		try {
 			// IMPORTANT NOTE:
-			// the first time you ask for a JWT access token, you should grant access by making the following call
+			// the first time you ask for a JWT access token, you should grant
+			// access by making the following call
 			// get DocuSign OAuth authorization url:
-			//String oauthLoginUrl = apiClient.getJWTUri(IntegratorKey, RedirectURI, OAuthBaseUrl);
-			// open DocuSign OAuth authorization url in the browser, login and grant access
-			//Desktop.getDesktop().browse(URI.create(oauthLoginUrl));
+			// String oauthLoginUrl = apiClient.getJWTUri(IntegratorKey,
+			// RedirectURI, OAuthBaseUrl);
+			// open DocuSign OAuth authorization url in the browser, login and
+			// grant access
+			// Desktop.getDesktop().browse(URI.create(oauthLoginUrl));
 			// END OF NOTE
-			
-			apiClient.configureJWTAuthorizationFlow(currentDir + publicKeyFilename, currentDir + privateKeyFilename, OAuthBaseUrl, IntegratorKey, UserId, 3600);
+
+			apiClient.configureJWTAuthorizationFlow(currentDir + publicKeyFilename, currentDir + privateKeyFilename,
+					OAuthBaseUrl, IntegratorKey, UserId, 3600);
 			Configuration.setDefaultApiClient(apiClient);
 
-			AuthenticationApi authApi = new AuthenticationApi();
-			LoginInformation loginInfo = authApi.login();
+			UserInfo loginInfo = apiClient.getUserInfo(OAuthBaseUrl);
 
-			Assert.assertNotNull(loginInfo);
-			Assert.assertNotNull(loginInfo.getLoginAccounts());
-			Assert.assertTrue(loginInfo.getLoginAccounts().size() > 0);
-			List<LoginAccount> loginAccounts = loginInfo.getLoginAccounts();
+			Assert.assertNotSame(null, loginInfo);
+			Assert.assertNotNull(loginInfo.getAccounts());
+			Assert.assertTrue(loginInfo.getAccounts().size() > 0);
+			List<Account> loginAccounts = loginInfo.getAccounts();
 			Assert.assertNotNull(loginAccounts.get(0).getAccountId());
 
-			String accountId = loginInfo.getLoginAccounts().get(0).getAccountId();
-
-			// parse first account's baseUrl
-			String[] accountDomain = loginInfo.getLoginAccounts().get(0).getBaseUrl().split("/v2");
-
-			// below code required for production, no effect in demo (same
-			// domain)
-			apiClient.setBasePath(accountDomain[0]);
-			Configuration.setDefaultApiClient(apiClient);
+			String accountId = loginInfo.getAccounts().get(0).getAccountId();
 
 			EnvelopesApi envelopesApi = new EnvelopesApi();
 			EnvelopeSummary envelopeSummary = envelopesApi.createEnvelope(accountId, envDef);
@@ -1001,37 +942,32 @@ public class SdkUnitTests {
 
 		ApiClient apiClient = new ApiClient(BaseUrl);
 		String currentDir = System.getProperty("user.dir");
-		
+
 		try {
 			// IMPORTANT NOTE:
-			// the first time you ask for a JWT access token, you should grant access by making the following call
+			// the first time you ask for a JWT access token, you should grant
+			// access by making the following call
 			// get DocuSign OAuth authorization url:
-			//String oauthLoginUrl = apiClient.getJWTUri(IntegratorKey, RedirectURI, OAuthBaseUrl);
-			// open DocuSign OAuth authorization url in the browser, login and grant access
-			//Desktop.getDesktop().browse(URI.create(oauthLoginUrl));
+			// String oauthLoginUrl = apiClient.getJWTUri(IntegratorKey,
+			// RedirectURI, OAuthBaseUrl);
+			// open DocuSign OAuth authorization url in the browser, login and
+			// grant access
+			// Desktop.getDesktop().browse(URI.create(oauthLoginUrl));
 			// END OF NOTE
-			
-			apiClient.configureJWTAuthorizationFlow(currentDir + publicKeyFilename, currentDir + privateKeyFilename, OAuthBaseUrl, IntegratorKey, UserId, 3600);
+
+			apiClient.configureJWTAuthorizationFlow(currentDir + publicKeyFilename, currentDir + privateKeyFilename,
+					OAuthBaseUrl, IntegratorKey, UserId, 3600);
 			Configuration.setDefaultApiClient(apiClient);
 
-			AuthenticationApi authApi = new AuthenticationApi();
-			LoginInformation loginInfo = authApi.login();
+			UserInfo loginInfo = apiClient.getUserInfo(OAuthBaseUrl);
 
 			Assert.assertNotSame(null, loginInfo);
-			Assert.assertNotNull(loginInfo.getLoginAccounts());
-			Assert.assertTrue(loginInfo.getLoginAccounts().size() > 0);
-			List<LoginAccount> loginAccounts = loginInfo.getLoginAccounts();
+			Assert.assertNotNull(loginInfo.getAccounts());
+			Assert.assertTrue(loginInfo.getAccounts().size() > 0);
+			List<Account> loginAccounts = loginInfo.getAccounts();
 			Assert.assertNotNull(loginAccounts.get(0).getAccountId());
 
-			String accountId = loginInfo.getLoginAccounts().get(0).getAccountId();
-
-			// parse first account's baseUrl
-			String[] accountDomain = loginInfo.getLoginAccounts().get(0).getBaseUrl().split("/v2");
-
-			// below code required for production, no effect in demo (same
-			// domain)
-			apiClient.setBasePath(accountDomain[0]);
-			Configuration.setDefaultApiClient(apiClient);
+			String accountId = loginInfo.getAccounts().get(0).getAccountId();
 
 			DiagnosticsApi diagApi = new DiagnosticsApi();
 

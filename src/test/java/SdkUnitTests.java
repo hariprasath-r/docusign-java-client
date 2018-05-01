@@ -13,7 +13,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.awt.Desktop;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 //import org.apache.oltu.oauth2.common.token.BasicOAuthToken;
 import org.junit.After;
@@ -39,9 +39,10 @@ import com.migcomponents.migbase64.Base64;
 public class SdkUnitTests {
 
 	public static final String UserName = "node_sdk@mailinator.com";
-	public static final String Password = "qweqweasd";
+	public static final String Password = "qweqweasdasd";
 	public static final String UserId = "fcc5726c-cd73-4844-b580-40bbbe6ca126";
 	public static final String IntegratorKey = "ae30ea4e-3959-4d1c-b867-fcb57d2dc4df";
+	public static final String IntegratorKeyImplicit = "68c1711f-8b19-47b1-888f-b49b4211d831";
 	public static final String ClientSecret = "b4dccdbe-232f-46cc-96c5-b2f0f7448f8f";
 	public static final String RedirectURI = "https://www.docusign.com/api";
 
@@ -80,7 +81,7 @@ public class SdkUnitTests {
 	// The methods must be annotated with annotation @Test. For example:
 	//
 	@Test
-	public void LoginTest() {
+	public void JWTLoginTest() {
 
 		ApiClient apiClient = new ApiClient(BaseUrl);
 		String currentDir = System.getProperty("user.dir");
@@ -126,7 +127,7 @@ public class SdkUnitTests {
 	}
 
 	@Test
-	public void OAuthLoginTest() {
+	public void AuthorizationCodeLoginTest() {
 
 		ApiClient apiClient = new ApiClient("https://" + OAuthBaseUrl, "docusignAccessCode", IntegratorKey, ClientSecret);
 		apiClient.setBasePath(BaseUrl);
@@ -166,6 +167,52 @@ public class SdkUnitTests {
 			LoginInformation loginInfo = authApi.login(loginOps);
 
 			List<LoginAccount> loginAccounts = loginInfo.getLoginAccounts();
+
+			System.out.println("LoginInformation: " + loginInfo);
+
+			// parse first account's baseUrl
+			String[] accountDomain = loginInfo.getLoginAccounts().get(0).getBaseUrl().split("/v2");
+
+			// below code required for production, no effect in demo (same
+			// domain)
+			apiClient.setBasePath(accountDomain[0]);
+			Configuration.setDefaultApiClient(apiClient);*/
+		//} catch (ApiException ex) {
+		//	System.out.println("Exception: " + ex);
+		} catch (Exception e) {
+			System.out.println("Exception: " + e.getLocalizedMessage());
+		}
+	}
+
+	@Test
+	public void ImplicitLoginTest() {
+
+		ApiClient apiClient = new ApiClient("https://" + OAuthBaseUrl, "docusignAccessCode", IntegratorKeyImplicit);
+		apiClient.setBasePath(BaseUrl);
+		Configuration.setDefaultApiClient(apiClient);
+
+		try {
+			// get DocuSign OAuth authorization url
+			String oauthLoginUrl = apiClient.getImplicitUri(IntegratorKeyImplicit, RedirectURI);
+			// open DocuSign OAuth login in the browser
+			Desktop.getDesktop().browse(URI.create(oauthLoginUrl));
+			// IMPORTANT: after the login, DocuSign will send back a fresh
+			// access token in the hash fragment of the redirect URI.
+			// You should set up a  client-side route that handles the redirect call to get
+			// that token and pass it to the ApiClient objectt as shown in the next
+			// lines:
+			/*String token = "<once_you_get_the_oauth_code_put_it_here>";
+			Long expiresIn = null; // = <once_you_get_the_expiration_period_put_it_here>;
+			// assign it to the token endpoint
+			apiClient.setAccessToken(token, expiresIn);
+
+			// now that the API client has an OAuth token, let's use in all
+			// DocuSign APIs
+			AuthenticationApi authApi = new AuthenticationApi(apiClient);
+			AuthenticationApi.LoginOptions loginOps = authApi.new LoginOptions();
+			loginOps.setApiPassword("true");
+			loginOps.setIncludeAccountIdGuid("true");
+			LoginInformation loginInfo = authApi.login(loginOps);
 
 			System.out.println("LoginInformation: " + loginInfo);
 
@@ -532,6 +579,7 @@ public class SdkUnitTests {
 			fileBytes = Files.readAllBytes(path);
 
 			f = new File(path.toString());
+			Assert.assertTrue(f.length() > 0);
 		} catch (IOException ioExcp) {
 			Assert.assertEquals(null, ioExcp);
 		}

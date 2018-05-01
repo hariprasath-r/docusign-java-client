@@ -39,24 +39,7 @@ public class OAuth implements Authentication {
 	public OAuth(Client client, OAuthFlow flow, String authorizationUrl, String tokenUrl, String scopes) {
 		this(client, OAuthClientRequest.tokenLocation(tokenUrl).setScope(scopes), OAuthClientRequest.authorizationLocation(authorizationUrl).setScope(scopes));
 
-		switch (flow) {
-		case accessCode:
-			tokenRequestBuilder.setGrantType(GrantType.AUTHORIZATION_CODE);
-			authenticationRequestBuilder.setResponseType(ResponseType.CODE.name().toLowerCase());
-			break;
-		case implicit:
-			tokenRequestBuilder.setGrantType(GrantType.IMPLICIT);
-			authenticationRequestBuilder.setResponseType(ResponseType.TOKEN.name().toLowerCase());
-			break;
-		case password:
-			tokenRequestBuilder.setGrantType(GrantType.PASSWORD);
-			break;
-		case application:
-			tokenRequestBuilder.setGrantType(GrantType.CLIENT_CREDENTIALS);
-			break;
-		default:
-			break;
-		}
+		this.setFlow(flow);
 	}
 
 	public OAuth(OAuthFlow flow, String authorizationUrl, String tokenUrl, String scopes) {
@@ -150,5 +133,26 @@ public class OAuth implements Authentication {
 
 	public void setOauthClient(Client client) {
 		this.oauthClient = new OAuthClient(new OAuthJerseyClient(client));
+	}
+	
+	public void setFlow(OAuthFlow flow) {
+		switch (flow) {
+		case accessCode:
+			tokenRequestBuilder.setGrantType(GrantType.AUTHORIZATION_CODE);
+			authenticationRequestBuilder.setResponseType(ResponseType.CODE.name().toLowerCase());
+			break;
+		case implicit:
+			tokenRequestBuilder.setGrantType(GrantType.IMPLICIT);
+			authenticationRequestBuilder.setResponseType(ResponseType.TOKEN.name().toLowerCase());
+			break;
+		case password:
+			tokenRequestBuilder.setGrantType(GrantType.PASSWORD);
+			break;
+		case application:
+			tokenRequestBuilder.setGrantType(GrantType.CLIENT_CREDENTIALS);
+			break;
+		default:
+			break;
+		}
 	}
 }

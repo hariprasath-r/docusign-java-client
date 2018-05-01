@@ -137,6 +137,18 @@ public class ApiClient {
             .setClientId(clientId)
             .setClientSecret(secret);
   }
+  
+  /**
+   * Helper constructor for OAuth2
+   * @param oAuthBasePath The API base path
+   * @param authName the authentication method name ("oauth" or "api_key")
+   * @param clientId OAuth2 Client ID
+   */
+  public ApiClient(String oAuthBasePath, String authName, String clientId) {
+     this(oAuthBasePath, authName);
+     this.getTokenEndPoint()
+            .setClientId(clientId);
+  }
 
   public String getBasePath() {
     return basePath;
@@ -384,9 +396,25 @@ public class ApiClient {
     }
     return null;
   }
+  
 
   /**
-   * Helper method to configure the OAuth accessCode/implicit flow parameters
+    * Helper method to configure authorization endpoint of the first oauth found in the authentications (there should be only one)
+    * @return
+    */
+  public AuthenticationRequestBuilder getImplicitEndPoint() {
+    for(Authentication auth : authentications.values()) {
+     if (auth instanceof OAuth) {
+        OAuth oauth = (OAuth) auth;
+        oauth.setFlow(OAuthFlow.implicit);
+        return oauth.getAuthenticationRequestBuilder();
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Helper method to configure the OAuth authorization code flow parameters
    * @param clientId OAuth2 client ID
    * @param clientSecret OAuth2 client secret
    * @param redirectURI OAuth2 redirect uri
@@ -409,6 +437,32 @@ public class ApiClient {
 
   public String getAuthorizationUri() throws OAuthSystemException {
   	return getAuthorizationEndPoint().buildQueryMessage().getLocationUri();
+  }
+  
+  /**
+   * Helper method to configure the OAuth implicit flow parameters
+   * @param clientId OAuth2 client ID
+   * @param redirectURI OAuth2 redirect uri
+   */
+  private void configureImplicitFlow(String clientId, String clientSecret, String redirectURI) {
+    for(Authentication auth : authentications.values()) {
+      if (auth instanceof OAuth) {
+        OAuth oauth = (OAuth) auth;
+        oauth.getTokenRequestBuilder()
+                .setClientId(clientId)
+                .setClientSecret(clientSecret)
+                .setRedirectURI(redirectURI);
+        oauth.getAuthenticationRequestBuilder()
+                .setClientId(clientId)
+                .setRedirectURI(redirectURI);
+        return;
+      }
+    }
+  }
+
+  public String getImplicitUri(String clientId, String redirectURI) throws OAuthSystemException {
+	  configureImplicitFlow(clientId, null, redirectURI);
+	  	return getImplicitEndPoint().buildQueryMessage().getLocationUri();
   }
   
   /**

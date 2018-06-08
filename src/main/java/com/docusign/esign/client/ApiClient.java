@@ -538,6 +538,7 @@ public class ApiClient {
             Client client = Client.create();
             WebResource webResource = client.resource("https://" + getOAuthBasePath() + "/oauth/userinfo");
             ClientResponse response = webResource.header("Authorization", "Bearer " + accessToken).get(ClientResponse.class);
+            System.out.println("Crossed");
             if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
                 String respBody = response.getEntity(String.class);
                 throw new ApiException(

@@ -9,13 +9,15 @@ import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import com.docusign.esign.client.ApiClient;
 import com.docusign.esign.client.Configuration;
 
-public class DSTest {
-	
+import ca.bell.eside.client.template.DSIF;
+
+public class DSTestHome implements DSIF {
+
 	// Java setup and config
-	String IntegratorKey = "63441ef9-cd1d-4c54-a400-b04b2a40c75c";
+	String IntegratorKey = "86f4ee12-564b-4226-bf43-705646037e6f";
 
 	// generate a client secret for the integrator key you supply above, again through sandbox admin menu
-	String ClientSecret = "************3191";
+	String ClientSecret = "{CLIENT_SECRET}";
 
 	// must match a redirect URI (case-sensitive) you configured on the key
 	String RedirectURI = "https://www.google.co.in/";
@@ -27,7 +29,8 @@ public class DSTest {
 	// will vary, you should always use the base URI that is returned from authentication to
 	// ensure your integration points to the correct endpoints (in both environments)
 	String RestApiUrl = "https://demo.docusign.net/restapi";
-	
+
+	@Override
 	public void getAuthorizationCode() {
 		// instantiate the api client and point to auth server
 		ApiClient apiClient = new ApiClient(AuthServerUrl, "docusignAccessCode", IntegratorKey, ClientSecret);
@@ -56,9 +59,16 @@ public class DSTest {
 			e.printStackTrace();
 		}
 	}
-	
-	public void getAuthenticationToken () {
+
+	@Override
+	public void getAuthenticationToken() {
+		// TODO Auto-generated method stub
 		
 	}
 
+	@Override
+	public void getBaseURI() {
+		// TODO Auto-generated method stub
+		
+	}
 }

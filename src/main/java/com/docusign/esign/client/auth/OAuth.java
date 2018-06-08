@@ -347,7 +347,7 @@ public class OAuth implements Authentication {
 
 			@JsonProperty("base_uri")
 			private String baseUri = null;
-
+ 
 			public Account accountId(String accountId) {
 				this.accountId = accountId;
 				return this;
@@ -423,7 +423,7 @@ public class OAuth implements Authentication {
 			public void setBaseUri(String baseUri) {
 				this.baseUri = baseUri;
 			}
-
+ 
 			@Override
 			public boolean equals(java.lang.Object o) {
 				if (this == o) {

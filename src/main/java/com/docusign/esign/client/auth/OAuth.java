@@ -1,5 +1,6 @@
 package com.docusign.esign.client.auth;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -19,6 +20,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
 
+import ca.bell.eside.client.UserInfo;
+import ca.bell.eside.client.UserInfo.Account;
+import ca.bell.eside.client.UserInfo.Account.Organization;
+import ca.bell.eside.client.UserInfo.Account.Organization.Link;
 import io.swagger.annotations.ApiModelProperty;
 
 @javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2017-03-06T16:42:36.211-08:00")
@@ -336,6 +341,174 @@ public class OAuth implements Authentication {
 		 *
 		 */
 		public static class Account {
+			
+			/**
+			 * Organization model with the properties:
+			 * @author Hariprasath.Ravi
+			 *
+			 */
+			public static class Organization {
+				
+				/**
+				 * Link model with the properties:
+				 * @author Hariprasath.Ravi
+				 *
+				 */
+				public static class Link {
+					
+					@JsonProperty("rel")
+					private String rel = null;
+					
+					@JsonProperty("href")
+					private String href = null;
+					
+					public Link rel(String rel) {
+						this.rel = rel;
+						return this;
+					}
+
+					@ApiModelProperty(example = "null", value = "")
+					public String getRel() {
+						return rel;
+					}
+
+					public void setRel(String rel) {
+						this.rel = rel;
+					}
+
+					public Link href(String href) {
+						this.href = href;
+						return this;
+					}
+					
+					@ApiModelProperty(example = "null", value = "")
+					public String getHref() {
+						return href;
+					}
+
+					public void setHref(String href) {
+						this.href = href;
+					}
+					
+					@Override
+					public boolean equals(java.lang.Object o) {
+						if (this == o) {
+							return true;
+						}
+						if (o == null || getClass() != o.getClass()) {
+							return false;
+						}
+						Link link = (Link) o;
+						return Objects.equals(this.rel, link.rel)
+								&& Objects.equals(this.rel, link.rel);
+					}
+
+					@Override
+					public int hashCode() {
+						return Objects.hash(rel ,href);
+					}
+
+					@Override
+					public String toString() {
+						StringBuilder sb = new StringBuilder();
+						sb.append("class Organization {\n");
+
+						sb.append("		rel: ").append(toIndentedString(rel)).append("\n");
+						sb.append("		href: ").append(toIndentedString(href)).append("\n");
+						return sb.toString();
+					}
+
+					/**
+					 * Convert the given object to string with each line indented by 4
+					 * spaces (except the first line).
+					 */
+					private String toIndentedString(java.lang.Object o) {
+						if (o == null) {
+							return "null";
+						}
+						return o.toString().replace("\n", "\n    ");
+					}
+					
+				}
+				
+				@JsonProperty("organization_id")
+				private String organizationId = null;
+				
+				@JsonProperty("links")
+				private List<Link> links = new ArrayList<UserInfo.Account.Organization.Link>();
+
+				public Organization organizationId(String organizationId) {
+					this.organizationId = organizationId;
+					return this;
+				}
+				
+				@ApiModelProperty(example = "null", value = "")
+				public String getOrganizationId() {
+					return organizationId;
+				}
+
+				public void setOrganizationId(String organizationId) {
+					this.organizationId = organizationId;
+				}
+
+				public Organization links(List<Link> links) {
+					this.links = links;
+					return this;
+				}
+				
+				@ApiModelProperty(example = "null", value = "")
+				public List<Link> getLinks() {
+					return links;
+				}
+
+				public void setLinks(List<Link> links) {
+					this.links = links;
+				}
+				
+				@Override
+				public boolean equals(java.lang.Object o) {
+					if (this == o) {
+						return true;
+					}
+					if (o == null || getClass() != o.getClass()) {
+						return false;
+					}
+					Organization organization = (Organization) o;
+					return Objects.equals(this.organizationId, organization.organizationId)
+							&& Objects.equals(this.links, organization.links);
+				}
+
+				@Override
+				public int hashCode() {
+					return Objects.hash(organizationId, links);
+				}
+
+				@Override
+				public String toString() {
+					StringBuilder sb = new StringBuilder();
+					sb.append("class Organization {\n");
+
+					sb.append("		organizationId: ").append(toIndentedString(organizationId)).append("\n");
+					sb.append("		links: ").append(toIndentedString(links)).append("\n");
+					return sb.toString();
+				}
+
+				/**
+				 * Convert the given object to string with each line indented by 4
+				 * spaces (except the first line).
+				 */
+				private String toIndentedString(java.lang.Object o) {
+					if (o == null) {
+						return "null";
+					}
+					return o.toString().replace("\n", "\n    ");
+				}
+				
+			}
+			
+			@JsonProperty("organization")
+			private Organization organization = null;
+			
 			@JsonProperty("account_id")
 			private String accountId = null;
 
@@ -424,6 +597,20 @@ public class OAuth implements Authentication {
 				this.baseUri = baseUri;
 			}
  
+			public Account organization(Organization organization) {
+				this.organization = organization;
+				return this;
+			}
+			
+			@ApiModelProperty(example = "null", value = "")
+			public Organization getOrganization() {
+				return organization;
+			}
+
+			public void setOrganization(Organization organization) {
+				this.organization = organization;
+			}
+
 			@Override
 			public boolean equals(java.lang.Object o) {
 				if (this == o) {
@@ -436,12 +623,13 @@ public class OAuth implements Authentication {
 				return Objects.equals(this.accountId, account.accountId)
 						&& Objects.equals(this.isDefault, account.isDefault)
 						&& Objects.equals(this.accountName, account.accountName)
-						&& Objects.equals(this.baseUri, account.baseUri);
+						&& Objects.equals(this.baseUri, account.baseUri)
+						&& Objects.equals(this.organization, account.organization);
 			}
 
 			@Override
 			public int hashCode() {
-				return Objects.hash(accountId, isDefault, accountName, baseUri);
+				return Objects.hash(accountId, isDefault, accountName, baseUri, organization);
 			}
 
 			@Override
@@ -453,6 +641,7 @@ public class OAuth implements Authentication {
 				sb.append("    isDefault: ").append(toIndentedString(isDefault)).append("\n");
 				sb.append("    accountName: ").append(toIndentedString(accountName)).append("\n");
 				sb.append("    baseUri: ").append(toIndentedString(baseUri)).append("\n");
+				sb.append("		organization: ").append(toIndentedString(organization)).append("\n");
 				return sb.toString();
 			}
 

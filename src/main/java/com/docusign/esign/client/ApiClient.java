@@ -1,57 +1,58 @@
 package com.docusign.esign.client;
 
-import com.fasterxml.jackson.annotation.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TimeZone;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response.Status.Family;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriBuilderException;
+
+import org.apache.oltu.oauth2.client.request.OAuthClientRequest.AuthenticationRequestBuilder;
+import org.apache.oltu.oauth2.client.request.OAuthClientRequest.TokenRequestBuilder;
+import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
+
+import com.docusign.esign.client.auth.AccessTokenListener;
+import com.docusign.esign.client.auth.ApiKeyAuth;
+import com.docusign.esign.client.auth.Authentication;
+import com.docusign.esign.client.auth.HttpBasicAuth;
+import com.docusign.esign.client.auth.JWTUtils;
+import com.docusign.esign.client.auth.OAuth;
+import com.docusign.esign.client.auth.OAuthFlow;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.datatype.joda.*;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.migcomponents.migbase64.Base64;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.WebResource.Builder;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.LoggingFilter;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
-import com.sun.jersey.api.client.WebResource.Builder;
-
 import com.sun.jersey.multipart.FormDataMultiPart;
 import com.sun.jersey.multipart.file.FileDataBodyPart;
-
-import org.apache.oltu.oauth2.client.request.OAuthClientRequest.AuthenticationRequestBuilder;
-import org.apache.oltu.oauth2.client.request.OAuthClientRequest.TokenRequestBuilder;
-import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
-
-import javax.ws.rs.core.Response.Status.Family;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriBuilderException;
-
-import java.util.Collection;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.TimeZone;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-
-import com.docusign.esign.client.auth.Authentication;
-import com.docusign.esign.client.auth.HttpBasicAuth;
-import com.docusign.esign.client.auth.JWTUtils;
-import com.docusign.esign.client.auth.ApiKeyAuth;
-import com.docusign.esign.client.auth.OAuth;
-import com.docusign.esign.client.auth.AccessTokenListener;
-import com.docusign.esign.client.auth.OAuthFlow;
 
 @javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2017-03-06T16:42:36.211-08:00")
 public class ApiClient {
@@ -536,9 +537,11 @@ public class ApiClient {
             }
 
             Client client = Client.create();
-            WebResource webResource = client.resource("https://" + getOAuthBasePath() + "/oauth/userinfo");
+            String uri = "https://" + getOAuthBasePath() + "/oauth/userinfo";
+            System.out.println("URI :: "+uri);
+            WebResource webResource = client.resource(uri);
             ClientResponse response = webResource.header("Authorization", "Bearer " + accessToken).get(ClientResponse.class);
-            System.out.println("Crossed");
+            System.out.println(response.toString());
             if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
                 String respBody = response.getEntity(String.class);
                 throw new ApiException(
@@ -622,6 +625,7 @@ public class ApiClient {
 	
 		  ObjectMapper mapper = new ObjectMapper();
 	      JsonNode responseJson = mapper.readValue(response.getEntityInputStream(), JsonNode.class);
+	      System.out.println(responseJson);
 	      if (!responseJson.has("access_token") || !responseJson.has("expires_in")) {
 	    	  throw new ApiException("Error while requesting an access token: " + responseJson);
 	      }

@@ -1,4 +1,4 @@
-package ca.bell.eside.client;
+package ca.bell.eside.client.test;
 
 import java.awt.Desktop;
 import java.io.IOException;

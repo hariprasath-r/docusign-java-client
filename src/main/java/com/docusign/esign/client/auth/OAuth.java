@@ -9,9 +9,9 @@ import javax.ws.rs.core.Response;
 
 import org.apache.oltu.oauth2.client.OAuthClient;
 import org.apache.oltu.oauth2.client.request.OAuthClientRequest;
-import org.apache.oltu.oauth2.client.response.OAuthJSONAccessTokenResponse;
 import org.apache.oltu.oauth2.client.request.OAuthClientRequest.AuthenticationRequestBuilder;
 import org.apache.oltu.oauth2.client.request.OAuthClientRequest.TokenRequestBuilder;
+import org.apache.oltu.oauth2.client.response.OAuthJSONAccessTokenResponse;
 import org.apache.oltu.oauth2.common.message.types.GrantType;
 import org.apache.oltu.oauth2.common.token.BasicOAuthToken;
 
@@ -20,10 +20,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
 
-import ca.bell.eside.client.UserInfo;
-import ca.bell.eside.client.UserInfo.Account;
-import ca.bell.eside.client.UserInfo.Account.Organization;
-import ca.bell.eside.client.UserInfo.Account.Organization.Link;
 import io.swagger.annotations.ApiModelProperty;
 
 @javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaClientCodegen", date = "2017-03-06T16:42:36.211-08:00")
@@ -103,6 +99,7 @@ public class OAuth implements Authentication {
 	public synchronized void updateAccessToken() {
 		OAuthJSONAccessTokenResponse accessTokenResponse;
 		try {
+			System.out.println(tokenRequestBuilder.buildBodyMessage());
 			accessTokenResponse = oauthClient.accessToken(tokenRequestBuilder.buildBodyMessage());
 		} catch (Exception e) {
 			throw new ClientHandlerException(e.getMessage(), e);

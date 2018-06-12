@@ -1,4 +1,4 @@
-package ca.bell.eside.client;
+package ca.bell.eside.model;
 
 import java.util.ArrayList;
 import java.util.List;

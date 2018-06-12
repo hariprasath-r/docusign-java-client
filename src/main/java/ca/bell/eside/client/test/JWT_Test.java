@@ -1,4 +1,4 @@
-package ca.bell.eside.client;
+package ca.bell.eside.client.test;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -54,9 +54,9 @@ public class JWT_Test {
 			//Desktop.getDesktop().browse(URI.create(oauthLoginUrl));
 			// END OF NOTE
 
-			String token = JWTUtils.generateJWTAssertion(currentDir + publicKeyFilename, currentDir + privateKeyFilename, OAuthBaseUrl, IntegratorKey, UserId, 3600);
-			System.out.println(">---\n"+token);
-			System.out.println("---<");
+//			String token = JWTUtils.generateJWTAssertion(currentDir + publicKeyFilename, currentDir + privateKeyFilename, OAuthBaseUrl, IntegratorKey, UserId, 3600);
+//			System.out.println(">---\n"+token);
+//			System.out.println("---<");
 			apiClient.configureJWTAuthorizationFlow(currentDir + publicKeyFilename, currentDir + privateKeyFilename, OAuthBaseUrl, IntegratorKey, UserId, 3600);
 			System.out.println("configured");
 			// now that the API client has an OAuth token, let's use it in all
@@ -73,10 +73,14 @@ public class JWT_Test {
 			// domain)
 			apiClient.setBasePath(userInfo.getAccounts().get(0).getBaseUri() + "/restapi");
 			Configuration.setDefaultApiClient(apiClient);
+			System.out.println(">---Updating Access Token---<");
+			apiClient.updateAccessToken();
+			System.out.println(apiClient.getAccessToken());
 		} catch (ApiException ex) {
 			System.out.println("Exception: " + ex);
 		} catch (Exception e) {
 			System.out.println("Exception: " + e.getLocalizedMessage());
+			e.printStackTrace();
 		}
 	}
 	
@@ -116,7 +120,8 @@ public class JWT_Test {
 //		signer.setEmail("robinson.rengaraj@bell.ca");
 		signer.setName("Software Developer");
 		signer.setRecipientId("1");
-
+		signer.setRoutingOrder("1");
+		
 //		Signer signer1 = new Signer();
 //		signer1.setEmail("viswanathan.mahadevan@ducenit.com");
 //		signer1.setName("Viswa");
@@ -143,7 +148,9 @@ public class JWT_Test {
 		envDef.getRecipients().setSigners(new ArrayList<Signer>());
 		envDef.getRecipients().getSigners().add(signer);
 //		envDef.getRecipients().getSigners().add(signer1);
+		
 
+		
 		// send the envelope (otherwise it will be "created" in the Draft folder
 		envDef.setStatus("sent");
 

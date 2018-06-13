@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.junit.Assert;
 
+import com.auth0.jwt.exceptions.JWTCreationException;
 import com.docusign.esign.api.EnvelopesApi;
 import com.docusign.esign.client.ApiClient;
 import com.docusign.esign.client.ApiException;
@@ -39,6 +40,21 @@ public class JWT_Test {
 	private static final String privateKeyFilename = "/src/test/keys/private_key_1.txt";
 	
 	private static final String SignTest1File = "/src/test/docs/SignTest1.pdf";
+	
+	public void getJWT() {
+		String currentDir = System.getProperty("user.dir");
+		String token = null;
+		try {
+			token = JWTUtils.generateJWTAssertion(currentDir + publicKeyFilename, currentDir + privateKeyFilename, OAuthBaseUrl, IntegratorKey, UserId, 3600);
+		} catch (JWTCreationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(token);
+	}
 	
 	public void JWTLoginTest() {
 		System.out.println("\nJWTLoginTest:\n" + "===========================================");
@@ -100,8 +116,8 @@ public class JWT_Test {
 
 		// create an envelope to be signed
 		EnvelopeDefinition envDef = new EnvelopeDefinition();
-		envDef.setEmailSubject("Please Sign my Java SDK Envelope");
-		envDef.setEmailBlurb("Hello, Please sign my Java SDK Envelope.");
+		envDef.setEmailSubject("Document needs signature");
+		envDef.setEmailBlurb("Hello Boys, Please Sign ASAP.");
 
 		// add a document to the envelope
 		Document doc = new Document();
@@ -116,44 +132,79 @@ public class JWT_Test {
 
 		// Add a recipient to sign the document
 		Signer signer = new Signer();
-		signer.setEmail("hariprasath.ravichan@bell.ca");
+		signer.setEmail("hariprasath.ravichandran@ducenit.com");
 //		signer.setEmail("robinson.rengaraj@bell.ca");
-		signer.setName("Software Developer");
+		signer.setName("Hariprasath");
 		signer.setRecipientId("1");
-		signer.setRoutingOrder("1");
+		signer.setRoutingOrder("2");
 		
-//		Signer signer1 = new Signer();
-//		signer1.setEmail("viswanathan.mahadevan@ducenit.com");
-//		signer1.setName("Viswa");
-//		signer.setRecipientId("2");
-//		
-		// Create a SignHere tab somewhere on the document for the signer to
-		// sign
-//		SignHere signHere = new SignHere();
-//		signHere.setDocumentId("1");
-//		signHere.setPageNumber("1");
-//		signHere.setRecipientId("1");
-//		signHere.setXPosition("100");
-//		signHere.setYPosition("100");
-//		signHere.setScaleValue("0.5");
-//
-//		List<SignHere> signHereTabs = new ArrayList<SignHere>();
-//		signHereTabs.add(signHere);
-//		Tabs tabs = new Tabs();
-//		tabs.setSignHereTabs(signHereTabs);
-//		signer.setTabs(tabs);
+		// Create a SignHere tab somewhere on the document for the signer to sign
+		SignHere signHere = new SignHere();
+		signHere.setDocumentId("1");
+		signHere.setPageNumber("1");
+		signHere.setRecipientId("1");
+		signHere.setXPosition("100");
+		signHere.setYPosition("100");
+		signHere.setScaleValue("1");
+		
+		List<SignHere> signHereTabs = new ArrayList<SignHere>();
+		signHereTabs.add(signHere);
+		Tabs tabs = new Tabs();
+		tabs.setSignHereTabs(signHereTabs);
+		signer.setTabs(tabs);
+		
+		Signer signer1 = new Signer();
+		signer1.setEmail("viswanathan.mahadevan@ducenit.com");
+		signer1.setName("Viswanathan");
+		signer1.setRecipientId("2");
+		signer1.setRoutingOrder("1");
+		
+		SignHere signHere1 = new SignHere();
+		signHere1.setDocumentId("1");
+		signHere1.setPageNumber("1");
+		signHere1.setRecipientId("2");
+		signHere1.setXPosition("100");
+		signHere1.setYPosition("150");
+		signHere1.setScaleValue("2");
+		
+		List<SignHere> signHereTabs1 = new ArrayList<SignHere>();
+		signHereTabs1.add(signHere1);
+		Tabs tabs1 = new Tabs();
+		tabs1.setSignHereTabs(signHereTabs1);
+		signer1.setTabs(tabs1);
+		
+		Signer signer2 = new Signer();
+		signer2.setEmail("vijayabaskar.kasi@ducenit.com");
+		signer2.setName("Vijay");
+		signer2.setRecipientId("3");
+		signer2.setRoutingOrder("2");
+		
+		SignHere signHere2 = new SignHere();
+		signHere2.setDocumentId("1");
+		signHere2.setPageNumber("1");
+		signHere2.setRecipientId("3");
+		signHere2.setXPosition("100");
+		signHere2.setYPosition("200");
+		signHere2.setScaleValue("2");
+		
+		List<SignHere> signHereTabs2 = new ArrayList<SignHere>();
+		signHereTabs2.add(signHere2);
+		Tabs tabs2 = new Tabs();
+		tabs2.setSignHereTabs(signHereTabs2);
+		signer2.setTabs(tabs2);
 
 		// Above causes issue
 		envDef.setRecipients(new Recipients());
 		envDef.getRecipients().setSigners(new ArrayList<Signer>());
 		envDef.getRecipients().getSigners().add(signer);
-//		envDef.getRecipients().getSigners().add(signer1);
-		
+		envDef.getRecipients().getSigners().add(signer1);
+		envDef.getRecipients().getSigners().add(signer2);
 
-		
 		// send the envelope (otherwise it will be "created" in the Draft folder
 		envDef.setStatus("sent");
 
+		System.out.println(envDef);
+		
 		ApiClient apiClient = new ApiClient(BaseUrl);
 		String currentDir = System.getProperty("user.dir");
 		
